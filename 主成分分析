@@ -1,0 +1,45 @@
+主要步骤：
+一、相关系数矩阵方法
+①对原始数据进行标准化处理（单位化和归一化）
+②计算样本相关系数矩阵
+③计算相关系数矩阵R的特征值和相应的特征向量
+④选择重要的主成分（求各个主成分的贡献率以及累积贡献率）
+⑤选取主成分一般当累积贡献率达到85%以上时，即可。
+⑥计算主成分得分
+二、协方差矩阵方法
+①对原始数据进行标准化处理（单位化和归一化）
+②计算协方差矩阵
+③计算协方差矩阵的特征值和相应的特征向量
+与上相似
+matlab代码：（以相关矩阵为例）
+B=xlsread('C:\Users\Lenovo\Desktop\跑步.xlsx');
+B=zscore(B); %将矩阵标准化
+r=corrcoef(B);%计算相关矩阵
+[coef,score,latent] = princomp(B);  %coef:系数矩阵,特征向量 
+%score：对原始数据进行解析得到的数据. 将n维数据按贡献率由大到小分列
+                              %latent:一维列向量，每一个数据是对应score里响应维的特征值由大到小
+latent'; 
+y=(100*latent/sum(latent))'; %特征值贡献率
+//可以根据y(:,1)+y(:,2)+….来依次计算累积贡献率
+[row,col]=size(coef);
+for j=1:col
+Z(:,j)=orth(coef(:,j));%将特征向量正交化
+end
+[m,n]=size(Z);  
+A=[];
+for i=1:n  
+    A(1,i)=norm(Z(:,i));  
+end  
+A=repmat(A,m,1);  
+Y=Z./A;   %将正交化的变量单位化，Y即为单位正交化后的特征向量
+%计算主成分得分
+new_score=B*Y;
+[a,b]=size(B);
+for i=1:a
+    total_score(i,1)=sum(new_score(i,:));
+    total_score(i,2)=i;  %排名
+end
+%强主成分得分与总分放到同一个矩阵中
+result_report=[new_score,total_score];
+%按总分降序排列
+result_report=sortrows(result_report,-4); %以第四列排序进行降序排序
